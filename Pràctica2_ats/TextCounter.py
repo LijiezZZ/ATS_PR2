@@ -16,10 +16,13 @@ def splitting(args):
 
 def mapping(frases):
     
-    resultat = []
+    resultat = {}
     
     for frase in frases:
-        
+        paraules = frase.strip().split(" ")
+        for paraula in paraules:
+            if paraula not in resultat and paraula.isalpha():
+                resultat[paraula] = 1
         
     return resultat
             
@@ -40,7 +43,7 @@ def main():
     else:
         frases = splitting(args)
         freqs = mapping(frases)
-        print(freqs[0])
+        print(freqs)
         
 
 if __name__ == "__main__":
