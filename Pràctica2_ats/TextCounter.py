@@ -1,5 +1,7 @@
-"""compta nom閟 una vegada una lletra en una paraula --> cama freq d'a-> 1 cop"""
+# -*- coding: utf-8 -*-
 import sys
+import re
+
 
 def splitting(args):
     
@@ -9,29 +11,50 @@ def splitting(args):
         f = open(filename, "r")
         
         for line in f:
-            resultat.append(line)
+            resultat.append(line.lower())
     
     return resultat
     
 
-def mapping(frases):
+def mapping(frase):
     
-    resultat = {}
+    resultat = []
     
-    for frase in frases:
-        paraules = frase.strip().split(" ")
-        for paraula in paraules:
-            if paraula not in resultat and paraula.isalpha():
-                resultat[paraula] = 1
+    paraules = re.sub("[^\w ]", "", frase).split()
+    for paraula in paraules:
+        aux = {}
+        lletres = list(paraula)
+        for lletra in lletres:
+            if lletra not in aux:
+                aux[lletra] = 1
+        resultat.append(aux)
         
     return resultat
             
             
 
-def shuffling():
-    return 0
+def shuffling(freq_map):
+    resultat = {}
+    
+    for llista in freq_map:
+        for dic in llista:
+            for key in dic.keys():
+                if key not in resultat:
+                    resultat[key] = [1]
+                else:
+                    resultat[key].append(1)
+    return resultat
+        
 
-def reducing():
+def reducing(freq_shuffled):
+    resultat = {}
+    
+    for key, value in freq_shuffled.items():
+        resultat[key] = len(value)
+    
+    return resultat
+
+def map_reduce():
     return 0
 
 def main():
@@ -42,8 +65,23 @@ def main():
         
     else:
         frases = splitting(args)
-        freqs = mapping(frases)
-        print(freqs)
+        freq_map = []
+        for frase in frases:
+            freq_map.append(mapping(frase))
+        freq_shuffled = {}
+        freq_shuffled = shuffling(freq_map)
+        print(freq_shuffled)
+        
+        freq_reduced = {}
+        freq_reduced = reducing(freq_shuffled)
+        
+        num_lletres = 0
+        for value in freq_reduced.values():
+            num_lletres += value
+        print(num_lletres)
+        """676"""
+        print(len(freq_reduced.keys()))
+        print(freq_reduced['t']/29)
         
 
 if __name__ == "__main__":
