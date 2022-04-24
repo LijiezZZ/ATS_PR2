@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
 import sys
 import re
+import time
+from multiprocessing import Pool
 
-
-def splitting(args):
+def splitting(filename):
     
     resultat = []
     
-    for filename in args:
-        f = open(filename, "r")
+    f = open(filename, "r")
         
-        for line in f:
-            resultat.append(line.lower())
+    for line in f:
+        resultat.append(line.lower())
     
     return resultat
     
@@ -21,10 +20,10 @@ def mapping(frase):
     resultat = []
     
     paraules = re.sub("[^\w ]", "", frase).split()
+
     for paraula in paraules:
         aux = {}
-        lletres = list(paraula)
-        for lletra in lletres:
+        for lletra in list(paraula):
             if lletra not in aux:
                 aux[lletra] = 1
         resultat.append(aux)
@@ -33,56 +32,98 @@ def mapping(frase):
             
             
 
-def shuffling(freq_map):
+def shuffling(freq_mapped):
+
     resultat = {}
-    
-    for llista in freq_map:
+
+    for llista in freq_mapped:
         for dic in llista:
             for key in dic.keys():
                 if key not in resultat:
                     resultat[key] = [1]
                 else:
                     resultat[key].append(1)
+
     return resultat
         
 
 def reducing(freq_shuffled):
     resultat = {}
-    
+
     for key, value in freq_shuffled.items():
         resultat[key] = len(value)
-    
+
     return resultat
 
-def map_reduce():
-    return 0
+def comptarParaules(frases):
+
+    resultat = 0
+
+    for frase in frases:
+        paraules = re.sub("[^\w ]", "", frase).split()
+        resultat += len(paraules)
+
+    return resultat
+
+def map_reduce(arg):
+
+    frases = splitting(arg)
+
+    num_paraules = comptarParaules(frases)
+
+    freq_mapped = []
+    for frase in frases:
+        freq_mapped.append(mapping(frase))
+
+    freq_shuffled = {}
+    freq_shuffled = shuffling(freq_mapped)
+        
+    freq_reduced = {}
+    freq_reduced = reducing(freq_shuffled)
+
+    print(arg)
+    for key, value in freq_reduced.items():
+        if key != list(freq_reduced.keys())[-1]:
+            print(key, ":", "{:.2%}".format(value / num_paraules))
+        else:
+            print(key, ":", "{:.2%}".format(value / num_paraules), "\n")
+
+def map_reduce_parallel(arg):
+
+    frases = splitting(arg)
+
+    num_paraules = comptarParaules(frases)
+
+    p = Pool()
+    freq_mapped = p.map(mapping, frases)
+    p.close()
+
+    freq_shuffled = {}
+    freq_shuffled = shuffling(freq_mapped)
+        
+    freq_reduced = {}
+    freq_reduced = reducing(freq_shuffled)
+
+    print(arg)
+    for key, value in freq_reduced.items():
+        if key != list(freq_reduced.keys())[-1]:
+            print(key, ":", "{:.2%}".format(value / num_paraules))
+        else:
+            print(key, ":", "{:.2%}".format(value / num_paraules), "\n")
 
 def main():
+
     args = sys.argv[1:]
     
     if len(args) == 0:
         print("Nombre d'argument d'entrada és 0")
         
     else:
-        frases = splitting(args)
-        freq_map = []
-        for frase in frases:
-            freq_map.append(mapping(frase))
-        freq_shuffled = {}
-        freq_shuffled = shuffling(freq_map)
-        print(freq_shuffled)
-        
-        freq_reduced = {}
-        freq_reduced = reducing(freq_shuffled)
-        
-        num_lletres = 0
-        for value in freq_reduced.values():
-            num_lletres += value
-        print(num_lletres)
-        """676"""
-        print(len(freq_reduced.keys()))
-        print(freq_reduced['t']/29)
-        
+        for arg in args:
+            start_time = time.time()
+            map_reduce(arg)
+            end_time = time.time()
+            print(end_time - start_time)
 
 if __name__ == "__main__":
     main();
