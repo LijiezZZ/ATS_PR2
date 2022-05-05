@@ -3,9 +3,9 @@ import re
 import time
 from multiprocessing import Pool
 import gc
+import numpy as np
 
 def splitting(filename):
-    print("SPLITTING")
     
     resultat = []
     
@@ -18,7 +18,6 @@ def splitting(filename):
     
 
 def mapping(frase):
-    print("MAPPING")
     
     resultat = []
     
@@ -27,8 +26,8 @@ def mapping(frase):
     for paraula in paraules:
         aux = {}
         for lletra in list(paraula):
-            if lletra not in aux:
-                aux[lletra] = 1
+            aux[lletra] = 1
+
         resultat.append(aux)
         
     return resultat
@@ -36,7 +35,6 @@ def mapping(frase):
             
 
 def shuffling(freq_mapped):
-    print("SHUFFLING")
     
     resultat = {}
 
@@ -52,7 +50,6 @@ def shuffling(freq_mapped):
         
 
 def reducing(freq_shuffled):
-    print("REDUCING")
     
     resultat = {}
 
@@ -62,7 +59,6 @@ def reducing(freq_shuffled):
     return resultat
 
 def comptarParaules(frases):
-    print("COUNTING WORDS")
 
     resultat = 0
 
@@ -105,6 +101,10 @@ def map_reduce_parallel(arg):
         freq_mapped = p.map(mapping, frases)
         p.close()
 
+    del frases
+    gc.collect()
+    
+
     freq_shuffled = {}
     freq_shuffled = shuffling(freq_mapped)
     
@@ -116,6 +116,8 @@ def map_reduce_parallel(arg):
     
     del freq_shuffled
     gc.collect()
+    
+    print(freq_reduced)
 
     print(arg)
     for key, value in freq_reduced.items():
@@ -139,4 +141,4 @@ def main():
             print(end_time - start_time)
 
 if __name__ == "__main__":
-    main();
+    main()
